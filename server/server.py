@@ -1,21 +1,17 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from config import db, gemini_client
+from config import db
+from ai import analyze_image_bp
 
 app = Flask(__name__)
 CORS(app)
+
+app.register_blueprint(analyze_image_bp)
 
 @app.route("/")
 def home():
     return jsonify({
         "message": "Backend server running!"
-    })
-
-# Scan tag
-@app.route("/scan-tag")
-def analyze_image():
-    return jsonify({
-        "message": "scan-tag route running!"
     })
 
 if __name__ == "__main__":
