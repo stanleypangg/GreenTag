@@ -1,13 +1,11 @@
-import json
 from io import BytesIO
 from PIL import Image
 from config import gemini_client
 from flask import Blueprint, request, jsonify
 
-analyze_image_bp = Blueprint('analyze_image_bp', __name__)
-analyze_sustainability_bp = Blueprint('analyze_sustainability_bp', __name__)
+ai_bp = Blueprint('ai_bp', __name__)
 
-@analyze_image_bp.route('/analyze_image', methods=['POST'])
+@ai_bp.route('/analyze_image', methods=['POST'])
 def analyze_image():
     if 'image' not in request.files:
         return jsonify({
@@ -64,6 +62,8 @@ def analyze_image():
             contents=[prompt, image]
         )
         
+        print(response.text)
+        
         # TODO: Change json structure
         return jsonify({
             'result': response.text
@@ -74,27 +74,21 @@ def analyze_image():
             'error': f'Error processing image: {str(e)}'
         }), 500
         
-@analyze_sustainability_bp.route('/analyze_sustainability', methods=['POST'])
+@ai_bp.route('/analyze_sustainability', methods=['POST'])
 def analyze_sustainability():
-    if 'materials' not in request.files:
+    if not request.json:
         return jsonify({
-            'error': 'No materials provided'
+            'error': 'No JSON provided'
         }), 400
     
-    materials_json = request.files['materials']
-    
-    if materials_json.filename == '':
-        return jsonify({'error': 'No json selected'}), 400
+    materials_json = request.json
     
     try:
-        # Parse JSON
-        materials_data = json.loads(materials_json.read().decode('utf-8'))
-        
         # TODO: Optimize prompt engineering
         prompt = f"""
             Based on this clothing item's material composition, analyze its sustainability and provide a recommendation.
 
-            Material composition: {materials_data}
+            Material composition: {materials_json}
 
             Please provide:
             1. Environmental impact assessment for each material (rated as low, medium, or high impact)

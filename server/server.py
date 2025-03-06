@@ -1,13 +1,14 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import db
-from ai import analyze_image_bp, analyze_sustainability_bp
+from ai import ai_bp
+from db import db_bp
 
 app = Flask(__name__)
 CORS(app)
 
-app.register_blueprint(analyze_image_bp)
-app.register_blueprint(analyze_sustainability_bp)
+app.register_blueprint(ai_bp)
+app.register_blueprint(db_bp)
 
 @app.route("/")
 def home():
