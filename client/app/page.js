@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { Slider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 
 function page() {
   // message is initially Loading
@@ -20,7 +20,7 @@ function page() {
 
   return (
     <>
-      <div></div>
+
     </>
   )
 }
