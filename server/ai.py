@@ -92,7 +92,7 @@ def analyze_sustainability():
 
             Please provide:
             1. Environmental impact assessment for each material (rated as low, medium, or high impact)
-            2. Overall sustainability score (1-10, where 10 is most sustainable)
+            2. Overall sustainability score (1-100, where 100 is most sustainable)
             3. A clear recommendation for one of these options: 
             - RECYCLE: For items that cannot be reused but materials can be salvaged
             - RESELL: For items in good condition that have market value
@@ -100,7 +100,7 @@ def analyze_sustainability():
             
             Format your response as JSON with these fields:
             - materialImpacts: Object with each material and its environmental impact
-            - sustainabilityScore: Numeric score 1-10
+            - sustainabilityScore: Numeric score 1-100
             - recommendation: One of "RECYCLE", "RESELL", or "DONATE"
             - reasoning: Brief explanation for the recommendation
         """

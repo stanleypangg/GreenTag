@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { Slider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
+import { Tooltip } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 
 function page() {
   // message is initially Loading
@@ -20,7 +22,11 @@ function page() {
 
   return (
     <>
-      <div></div>
+      <ChakraProvider>
+        <Tooltip showArrow content="gyatt3000">
+          <Button>Hover me</Button>
+        </Tooltip>
+      </ChakraProvider>
     </>
   )
 }
