@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 const Header: React.FC = () => {
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-200">
+    <header className="h-20 flex items-center justify-between px-6 bg-[#F8F9FA]">
       {/* Brand: logo + title */}
       <div className="flex items-center space-x-2">
         {/* Replace with your actual logo file or SVG */}
@@ -13,7 +13,7 @@ const Header: React.FC = () => {
           alt="GreenTag"
           className="h-8 w-auto"
         />
-        <span className="text-xl font-semibold">GreenTag</span>
+        <span className="text-m font-semibold">GreenTag</span>
       </div>
 
       {/* Right side: search & sign in */}
