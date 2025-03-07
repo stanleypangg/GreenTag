@@ -1,25 +1,26 @@
+// components/Layout.tsx
 import React, { PropsWithChildren } from 'react';
-import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
 
 const Layout: React.FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-800">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
+      {/* Header spans the full width */}
+      <Header />
 
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-1">
-        {/* Header */}
-        <Header />
+      {/* Sidebar & Main content area */}
+      <div className="flex flex-1">
+        <Sidebar />
 
-        {/* Page Content */}
-        <main className="p-6 flex-1">{children}</main>
-
-        {/* Footer */}
-        <Footer />
+        <main className="flex-1 p-6">
+          {children}
+        </main>
       </div>
+
+      {/* Footer (optional) */}
+      <Footer />
     </div>
   );
 };
