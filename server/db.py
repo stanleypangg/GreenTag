@@ -120,7 +120,7 @@ def add_item(data):
     """Add an item to Firestore directly"""
     try:
         data['created_at'] = time.time()
-        doc_ref = db.collection('clothing_items').document()
+        doc_ref = db.collection('items').document()
         doc_ref.set(data)
         return doc_ref.id
     except Exception as e:

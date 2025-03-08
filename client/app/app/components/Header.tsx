@@ -1,6 +1,8 @@
 // components/Header.tsx
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import logo from '../../assets/logo.svg';
 
 const Header: React.FC = () => {
   return (
@@ -8,8 +10,8 @@ const Header: React.FC = () => {
       {/* Brand: logo + title */}
       <div className="flex items-center space-x-2">
         {/* Replace with your actual logo file or SVG */}
-        <img
-          src="client\app\assets\logo.svg"
+        <Image
+          src={logo}
           alt="GreenTag"
           className="h-8 w-auto"
         />

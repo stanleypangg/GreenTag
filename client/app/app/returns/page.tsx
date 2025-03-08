@@ -7,6 +7,7 @@ interface ReturnItem {
     composition: { [key: string]: number };
     score: number;
     status: string;
+    date: string;
 }
 
 const ReturnsPage: React.FC = () => {
@@ -20,8 +21,17 @@ const ReturnsPage: React.FC = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log("Fetched data:", data); // Log the fetched data
-                setItems(data.items || []);
+                console.log("Fetched data:", data);
+
+                // Check if data is an array before setting items
+                if (Array.isArray(data)) {
+                    setItems(data);
+                } else if (data && data.items && Array.isArray(data.items)) {
+                    setItems(data.items);
+                } else {
+                    console.warn("Data format is unexpected:", data);
+                    setItems([]);
+                }
             } catch (error) {
                 console.error("Could not fetch items:", error);
                 setItems([]);

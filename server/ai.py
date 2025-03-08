@@ -1,7 +1,12 @@
 from io import BytesIO
 from PIL import Image
-from config import gemini_client
+from config import gemini_client, db
 from flask import Blueprint, request, jsonify
+import json
+import time
+import pprint
+from datetime import datetime, timedelta
+import random
 
 ai_bp = Blueprint('ai_bp', __name__)
 
@@ -49,8 +54,6 @@ def analyze_image():
             "brand": "Example Brand",
             "additionalText": "Made in Portugal"
             }
-            
-            If no materials are visible, return an empty materials object.
             
             IMPORTANT: Return ONLY a raw, valid JSON object. Do not include any markdown code blocks, explanations, 
             or additional formatting. The output should start with '{' and end with '}' and contain no other text.
@@ -109,7 +112,7 @@ def analyze_sustainability():
             model="gemini-2.0-flash",
             contents=[prompt]
         )
-
+        
         print(response.text)
         
         return jsonify({
@@ -120,3 +123,93 @@ def analyze_sustainability():
         return jsonify({
             'error': f'Error processing json: {str(e)}'
         }), 500
+        
+def generate_example_items(num_items=5):
+    try:
+        prompt = f"""
+            Generate {num_items} example clothing items with the following attributes:
+            - composition: A map (object) of material names (e.g., Cotton, Polyester) to their percentage (as a number).
+            Do not include descriptors like organic or recycled, just the material.
+            - score: An integer sustainability score between 1 and 100
+            - status: A string representing the item's recommended end-of-life status ("Recycle", "Resell", or "Donate")
+            - date: A string representing a truly random date within 2024 that the item was processed in ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+
+            Format your response as a list of dictionaries. Each dictionary should represent a clothing item 
+            and adhere to the attribute descriptions above.
+
+            Example output:
+            [
+                {{
+                    "composition": {{"Cotton": 95, "Elastane": 5}},
+                    "score": 75,
+                    "status": "Recycle",
+                    "date": "2024-03-08T12:00:00.000Z"
+                }},
+                {{
+                    "composition": {{"Polyester": 100}},
+                    "score": 92,
+                    "status": "Resell",
+                    "date": "2024-03-08T13:30:00.000Z"
+                }}
+            ]
+            
+            BAD Example output, avoid at all costs:
+            ```python
+                [
+                    {{
+                        "composition": {{"Cotton": 95, "Elastane": 5}},
+                        "score": 75,
+                        "status": "Recycle",
+                        "date": "2024-03-08T12:00:00.000Z"
+                    }},
+                    {{
+                        "composition": {{"Polyester": 100}},
+                        "score": 92,
+                        "status": "Resell",
+                        "date": "2024-03-08T13:30:00.000Z"
+                    }}
+                ]
+            ```
+
+            IMPORTANT: Return ONLY a Python list of dictionaries. Do not use any backticks, only include what's part of the 
+            string that represents a list of dictionaries. Do not include any markdown code blocks, 
+            explanations, or additional formatting. The output should start with '[' and end with ']' and contain 
+            no other text. Do not use newline characters, or backslashes.
+            The most important part is you output it in a format, that will later go into the paramete of json.loads(),
+            DO NOT OUTPUT AN INVALID FORMAT.
+        """
+        
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
+
+        print(response.text)
+        # Directly return the parsed JSON
+        try:
+            items_list = json.loads(response.text)
+            return items_list
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON in generate_example_items: {e}")
+            print(f"Gemini response: {response.text}")  # Print the raw response from Gemini
+            return None
+
+    except Exception as e:
+        print(f"Error generating example items: {e}")
+        return None
+        
+if __name__ == "__main__":
+    for _ in range(5):
+        try:
+            items = generate_example_items(75)  # Directly get the parsed JSON
+            if items:
+                try:
+                    # Iterate through the list of items and add them to Firestore one by one
+                    for item in items:
+                        # Add each item to Firestore
+                        db.collection('items').add(item)
+                    print("Items added successfully to Firestore!")
+                except Exception as e:
+                    print(f"Error adding items to Firestore: {e}")
+        except Exception as e:
+            print(f"Failed to generate items: {e}")
