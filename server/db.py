@@ -17,7 +17,7 @@ def create_item():
         data['created_at'] = time.time()
         
         # Add to Firestore
-        doc_ref = db.collection('clothing_items').document()
+        doc_ref = db.collection('items').document()
         doc_ref.set(data)
         
         # Return the new document with ID
@@ -33,18 +33,11 @@ def create_item():
 @db_bp.route('/items', methods=['GET'])
 def get_items():
     try:
-        user_id = request.args.get('user_id')
-        limit = int(request.args.get('limit', 50))  # Default to 50 items
-        
         # Start with the collection reference
-        items_ref = db.collection('clothing_items')
+        items_ref = db.collection('items')
         
-        # Filter by user_id if provided
-        if user_id:
-            items_ref = items_ref.where('user_id', '==', user_id)
-        
-        # Order and limit
-        items = items_ref.order_by('created_at', direction='DESCENDING').limit(limit).get()
+        # Get items
+        items = items_ref.get()
         
         # Convert to list
         items_list = []

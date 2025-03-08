@@ -9,7 +9,7 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-2">
         {/* Replace with your actual logo file or SVG */}
         <img
-          src="../../assets/logo.svg"
+          src="client\app\assets\logo.svg"
           alt="GreenTag"
           className="h-8 w-auto"
         />
