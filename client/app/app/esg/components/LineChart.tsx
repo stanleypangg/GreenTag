@@ -20,7 +20,7 @@ const LineChart = () => {
 
     // Responsive chart size management
     const [chartWidth, setChartWidth] = useState(600);
-    const [chartHeight, setChartHeight] = useState(400);
+    const [chartHeight, setChartHeight] = useState(350);
 
     // Colors from the reference image (approximate)
     const lineColor = '#6B8E23'; // Olive green line
@@ -73,20 +73,21 @@ const LineChart = () => {
     useEffect(() => {
         const handleResize = () => {
             if (wrapperRef.current) {
-                const width = wrapperRef.current.offsetWidth;
+                const width = wrapperRef.current.clientWidth - 20; // Subtract padding
+                const height = wrapperRef.current.clientHeight - 60; // Subtract header and padding
                 setChartWidth(width);
-                setChartHeight(400);
+                setChartHeight(height);
             }
         };
 
-        if (wrapperRef.current) {
-            setChartWidth(wrapperRef.current.offsetWidth);
-        }
-
+        // Initial size calculation
+        handleResize();
+        
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Chart drawing effect
     useEffect(() => {
         if (!data || data.length === 0 || !svgRef.current) {
             return;
@@ -95,7 +96,7 @@ const LineChart = () => {
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove(); // Clear previous chart
 
-        const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+        const margin = { top: 20, right: 30, bottom: 50, left: 60 };
         const width = chartWidth - margin.left - margin.right;
         const height = chartHeight - margin.top - margin.bottom;
 
@@ -196,24 +197,6 @@ const LineChart = () => {
             .style("stroke", "#e0e0e0")
             .style("stroke-opacity", 0.7);
 
-        // // Add y-axis title
-        // g.append("text")
-        //     .attr("transform", "rotate(-90)")
-        //     .attr("y", 0 - margin.left)
-        //     .attr("x", 0 - (height / 2))
-        //     .attr("dy", "1em")
-        //     .style("text-anchor", "middle")
-        //     .text("Percentage (%)");
-
-        // // Add title
-        // g.append("text")
-        //     .attr("x", width / 2)
-        //     .attr("y", 0 - (margin.top / 2))
-        //     .attr("text-anchor", "middle")
-        //     .style("font-size", "16px")
-        //     .style("font-weight", "bold")
-        //     .text(`${selectedLine} Rate Over Time`);
-
         // Add a subtle gradient under the line
         const gradientId = `line-gradient-${selectedLine.toLowerCase()}`;
 
@@ -306,17 +289,15 @@ const LineChart = () => {
     };
 
     return (
-        <div
-            className="w-full h-full flex flex-col items-start justify-start relative"
-            ref={wrapperRef}
-            style={{ width: '65%', height: '45%' }}
-        >
-            <div className="absolute top-0 left-0 p-2">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md w-full h-full flex flex-col p-4">
+            <h2 className="text-lg font-semibold mb-2">Trend Analysis</h2>
+            
+            <div className="mb-2">
                 <select
                     id="line-select"
                     value={selectedLine}
                     onChange={handleLineChange}
-                    className="mt-1 block w-40 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    className="block w-40 pl-3 pr-10 py-1 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                 >
                     <option value="Donate">Donate</option>
                     <option value="Resell">Resell</option>
@@ -324,7 +305,10 @@ const LineChart = () => {
                 </select>
             </div>
 
-            <div className="w-full h-full mt-12">
+            <div 
+                className="flex-grow relative" 
+                ref={wrapperRef}
+            >
                 {loading && <div className="flex justify-center items-center h-full">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
                 </div>}
@@ -338,7 +322,7 @@ const LineChart = () => {
                         ref={svgRef}
                         width={chartWidth}
                         height={chartHeight}
-                        className="bg-white rounded-lg shadow-sm"
+                        className="bg-white rounded-lg"
                     >
                     </svg>
                 )}

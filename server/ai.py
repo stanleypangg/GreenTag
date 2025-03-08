@@ -133,6 +133,8 @@ def generate_example_items(num_items=5):
             - score: An integer sustainability score between 1 and 100
             - status: A string representing the item's recommended end-of-life status ("Recycle", "Resell", or "Donate")
             - date: A string representing a truly random date within 2024 that the item was processed in ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+            - batch_no: A string with a CAPITAL letter prefix based on the status ('C' for Recycle, 'S' for Resell, 'D' for Donate) 
+              followed by an integer between 1-3 (e.g., "C1", "S2", "D3")
 
             Format your response as a list of dictionaries. Each dictionary should represent a clothing item 
             and adhere to the attribute descriptions above.
@@ -143,40 +145,29 @@ def generate_example_items(num_items=5):
                     "composition": {{"Cotton": 95, "Elastane": 5}},
                     "score": 75,
                     "status": "Recycle",
-                    "date": "2024-03-08T12:00:00.000Z"
+                    "date": "2024-03-08T12:00:00.000Z",
+                    "batch_no": "C1"
                 }},
                 {{
                     "composition": {{"Polyester": 100}},
                     "score": 92,
                     "status": "Resell",
-                    "date": "2024-03-08T13:30:00.000Z"
+                    "date": "2024-03-08T13:30:00.000Z",
+                    "batch_no": "S2"
                 }}
             ]
-            
-            BAD Example output, avoid at all costs:
-            ```python
-                [
-                    {{
-                        "composition": {{"Cotton": 95, "Elastane": 5}},
-                        "score": 75,
-                        "status": "Recycle",
-                        "date": "2024-03-08T12:00:00.000Z"
-                    }},
-                    {{
-                        "composition": {{"Polyester": 100}},
-                        "score": 92,
-                        "status": "Resell",
-                        "date": "2024-03-08T13:30:00.000Z"
-                    }}
-                ]
-            ```
 
             IMPORTANT: Return ONLY a Python list of dictionaries. Do not use any backticks, only include what's part of the 
             string that represents a list of dictionaries. Do not include any markdown code blocks, 
             explanations, or additional formatting. The output should start with '[' and end with ']' and contain 
             no other text. Do not use newline characters, or backslashes.
-            The most important part is you output it in a format, that will later go into the paramete of json.loads(),
+            The most important part is you output it in a format, that will later go into the parameter of json.loads(),
             DO NOT OUTPUT AN INVALID FORMAT.
+            
+            Make sure the batch_no prefix ALWAYS matches the status:
+            - "Recycle" status must have batch_no starting with "C" (capital C)
+            - "Resell" status must have batch_no starting with "S" (capital S)
+            - "Donate" status must have batch_no starting with "D" (capital D)
         """
         
         response = gemini_client.models.generate_content(
@@ -208,6 +199,7 @@ if __name__ == "__main__":
                     # Add each item to Firestore
                     db.collection('items').add(item)
                 print("Items added successfully to Firestore!")
+                print(items)
             except Exception as e:
                 print(f"Error adding items to Firestore: {e}")
     except Exception as e:
