@@ -199,17 +199,16 @@ def generate_example_items(num_items=5):
         return None
         
 if __name__ == "__main__":
-    for _ in range(5):
-        try:
-            items = generate_example_items(75)  # Directly get the parsed JSON
-            if items:
-                try:
-                    # Iterate through the list of items and add them to Firestore one by one
-                    for item in items:
-                        # Add each item to Firestore
-                        db.collection('items').add(item)
-                    print("Items added successfully to Firestore!")
-                except Exception as e:
-                    print(f"Error adding items to Firestore: {e}")
-        except Exception as e:
-            print(f"Failed to generate items: {e}")
+    try:
+        items = generate_example_items(75)  # Directly get the parsed JSON
+        if items:
+            try:
+                # Iterate through the list of items and add them to Firestore one by one
+                for item in items:
+                    # Add each item to Firestore
+                    db.collection('items').add(item)
+                print("Items added successfully to Firestore!")
+            except Exception as e:
+                print(f"Error adding items to Firestore: {e}")
+    except Exception as e:
+        print(f"Failed to generate items: {e}")

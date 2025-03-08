@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 
 db_bp = Blueprint('db_bp', __name__)
 
+# TODO: Needs updating
 @db_bp.route('/items', methods=['POST'])
 def create_item():
     try:
@@ -51,10 +52,11 @@ def get_items():
     except Exception as e:
         return jsonify({'error': f'Error fetching items: {str(e)}'}), 500
 
+# TODO: Needs updating
 @db_bp.route('/items/<item_id>', methods=['GET'])
 def get_item(item_id):
     try:
-        doc = db.collection('clothing_items').document(item_id).get()
+        doc = db.collection('items').document(item_id).get()
         
         if not doc.exists:
             return jsonify({'error': 'Item not found'}), 404
@@ -67,6 +69,7 @@ def get_item(item_id):
     except Exception as e:
         return jsonify({'error': f'Error fetching item: {str(e)}'}), 500
 
+# TODO: Needs updating
 @db_bp.route('/items/<item_id>', methods=['PUT'])
 def update_item(item_id):
     try:
@@ -79,7 +82,7 @@ def update_item(item_id):
         data['updated_at'] = time.time()
         
         # Update in Firestore
-        doc_ref = db.collection('clothing_items').document(item_id)
+        doc_ref = db.collection('items').document(item_id)
         doc = doc_ref.get()
         
         if not doc.exists:
@@ -103,7 +106,7 @@ def update_item(item_id):
 @db_bp.route('/items/<item_id>', methods=['DELETE'])
 def delete_item(item_id):
     try:
-        doc_ref = db.collection('clothing_items').document(item_id)
+        doc_ref = db.collection('items').document(item_id)
         doc = doc_ref.get()
         
         if not doc.exists:
@@ -115,6 +118,75 @@ def delete_item(item_id):
         
     except Exception as e:
         return jsonify({'error': f'Error deleting item: {str(e)}'}), 500
+
+@db_bp.route('/item_stats', methods=['GET'])
+def get_item_stats():
+    try:
+        # Basic counters for each status
+        counts = {
+            'Recycle': 0,
+            'Donate': 0,
+            'Resell': 0
+        }
+        
+        # Data for monthly trend chart
+        monthly_data = {}
+        
+        # Start with the collection reference
+        items_ref = db.collection('items')
+        
+        # Get items
+        items = items_ref.get()
+        
+        # Process items
+        for item in items:
+            item_data = item.to_dict()
+            
+            # Update status counts
+            status = item_data.get('status')
+            if status in counts:
+                counts[status] += 1
+            
+            # Extract month from date for chart data
+            if 'date' in item_data:
+                try:
+                    # Parse ISO date string
+                    date_str = item_data['date']
+                    # Extract year-month (YYYY-MM)
+                    month_key = date_str[:7]
+                    
+                    # Initialize month data if not exists
+                    if month_key not in monthly_data:
+                        monthly_data[month_key] = {'Recycle': 0, 'Donate': 0, 'Resell': 0, 'total': 0}
+                    
+                    # Update counts
+                    if status in counts:
+                        monthly_data[month_key][status] += 1
+                        monthly_data[month_key]['total'] += 1
+                except Exception as e:
+                    print(f"Error processing date: {e}")
+        
+        # Convert monthly data to chart format
+        chart_data = []
+        for month, data in sorted(monthly_data.items()):
+            total = data['total'] or 1  # Avoid division by zero
+            chart_data.append({
+                'month': month,
+                'Recycle_percent': (data['Recycle'] / total) * 100,
+                'Donate_percent': (data['Donate'] / total) * 100,
+                'Resell_percent': (data['Resell'] / total) * 100
+            })
+        
+        # Return both count summary and chart data
+        response = {
+            'counts': counts,
+            'chart_data': chart_data
+        }
+        
+        return jsonify(response), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Error fetching item stats: {str(e)}'}), 500
 
 def add_item(data):
     """Add an item to Firestore directly"""
@@ -130,7 +202,7 @@ def add_item(data):
 def get_item_by_id(item_id):
     """Get item by ID for direct use in other modules"""
     try:
-        doc = db.collection('clothing_items').document(item_id).get()
+        doc = db.collection('items').document(item_id).get()
         if doc.exists:
             data = doc.to_dict()
             data['id'] = doc.id
