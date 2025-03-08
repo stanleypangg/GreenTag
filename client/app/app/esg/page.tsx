@@ -2,11 +2,13 @@
 
 import React from 'react';
 import LineChart from './components/LineChart';
+import PiChart from './components/PiChart'
 
 const ESGPage: React.FC = () => {
     return (
         <>
-            <LineChart></LineChart>
+            {/* <LineChart></LineChart> */}
+            {/* <PiChart></PiChart> */}
         </>
     );
 };
