@@ -22,9 +22,9 @@ const Sidebar: React.FC = () => {
 
 	const navItems: NavItem[] = [
 		{ name: 'Dashboard', icon: <FiHome />, href: '/app/dashboard' },
-		{ name: 'Tables', icon: <FiBarChart2 />, href: '/app/returns' },
+		{ name: 'Returns', icon: <FiBarChart2 />, href: '/app/returns' },
 		{ name: 'ESG', icon: <FiCreditCard />, href: '/app/esg' },
-		{ name: 'RTL', icon: <FiRepeat />, href: '#' },
+		{ name: 'Routing', icon: <FiRepeat />, href: '/app/routing' },
 	];
 
 	const accountItems: NavItem[] = [

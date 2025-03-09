@@ -28,36 +28,24 @@ def analyze_image():
         image_data = BytesIO(image_bytes)
         image = Image.open(image_data)
         
-        # TODO: Optimize prompt engineering
+        # Enhanced prompt for better material composition analysis
         prompt = """
-            This image shows a clothing tag or label. Please:
+            Analyze this clothing tag or label and extract the following information:
         
-            1. Extract all text visible in the image, especially focusing on material composition
-            2. Identify percentages of different materials (cotton, polyester, wool, etc.)
-            3. Parse any care instructions visible in the image
-            4. Note any brand information if visible
+            1. Material composition (percentages of different materials)
+            2. Care instructions if visible
+            3. Brand name if visible
             
-            Format your response as JSON with these fields:
-            - materials: An object with material names as keys and percentage values (number only)
-            - careInstructions: Array of care instructions
-            - brand: Brand name if visible, otherwise null
-            - additionalText: Any other relevant text from the image
-            
-            Example output:
+            Return your analysis as a dictionary with the following structure:
             {
-            "materials": {
-                "cotton": 60,
-                "polyester": 35,
-                "elastane": 5
-            },
-            "careInstructions": ["Machine wash cold", "Tumble dry low"],
-            "brand": "Example Brand",
-            "additionalText": "Made in Portugal"
+                "composition": {"MaterialName": Percentage, ...},
+                "careInstructions": ["Instruction1", "Instruction2", ...],
+                "brand": "BrandName",
+                "additionalText": "Any other relevant text"
             }
             
-            IMPORTANT: Return ONLY a raw, valid JSON object. Do not include any markdown code blocks, explanations, 
-            or additional formatting. The output should start with '{' and end with '}' and contain no other text.
-            Make sure to format it like the example output. Do not use newline characters, or backslashes.
+            Make sure all material names have their first letter capitalized.
+            Material percentages should sum to 100%.
         """
         
         response = gemini_client.models.generate_content(
@@ -65,63 +53,146 @@ def analyze_image():
             contents=[prompt, image]
         )
         
-        print(response.text)
+        print("Gemini response for image analysis:", response.text)
         
-        # TODO: Change json structure
-        return jsonify({
-            'result': response.text
-        }), 200
+        try:
+            # Try to extract JSON from the response
+            # This regex approach helps handle cases where the AI might wrap JSON in markdown
+            import re
+            json_match = re.search(r'{.*}', response.text, re.DOTALL)
+            if json_match:
+                json_text = json_match.group(0)
+                analysis_result = json.loads(json_text)
+            else:
+                # If no JSON pattern is found, try parsing the whole response
+                analysis_result = json.loads(response.text)
+            
+            # Extract composition from the response
+            composition = {}
+            if "composition" in analysis_result:
+                composition = analysis_result["composition"]
+            elif "materials" in analysis_result:
+                composition = analysis_result["materials"]
+            
+            # Ensure material names are capitalized
+            composition = {k.capitalize(): v for k, v in composition.items()}
+            
+            # Now analyze sustainability based on materials
+            sustainability_prompt = f"""
+                Analyze the sustainability of a clothing item with this material composition:
+                {composition}
+
+                Return a dictionary with:
+                1. sustainabilityScore: An integer score from 1-100 (higher is more sustainable)
+                2. recommendation: One of "RECYCLE", "RESELL", or "DONATE" based on materials
+                
+                Format your response as a Python dictionary:
+                {{
+                    "sustainabilityScore": 75,
+                    "recommendation": "RECYCLE"
+                }}
+                
+                Do not include any explanations or markdown formatting.
+            """
+            
+            sustainability_response = gemini_client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=[sustainability_prompt]
+            )
+            
+            print("Sustainability analysis:", sustainability_response.text)
+            
+            try:
+                # Extract JSON from sustainability response
+                json_match = re.search(r'{.*}', sustainability_response.text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group(0)
+                    sustainability_data = json.loads(json_text)
+                else:
+                    sustainability_data = json.loads(sustainability_response.text)
+                
+                # Get the recommendation and ensure it's properly formatted
+                recommendation = sustainability_data.get("recommendation", "RECYCLE").title()
+                
+                # Map the prefix letter based on recommendation
+                status_prefix = {
+                    "Recycle": "C",
+                    "Resell": "S", 
+                    "Donate": "D"
+                }.get(recommendation, "C")
+                
+                # Generate random batch number 1-3
+                batch_number = f"{status_prefix}{random.randint(1, 3)}"
+                
+                # Generate a random ID for the item
+                item_id = f"TAG{random.randint(10000, 99999)}"
+                
+                # Create the final response object with the exact structure needed
+                result = {
+                    "id": item_id,
+                    "composition": composition,
+                    "score": int(sustainability_data.get("sustainabilityScore", 50)),
+                    "status": recommendation,
+                    "date": datetime.now().isoformat(),
+                    "batch_no": batch_number
+                }
+                
+                # Store the analysis in the database
+                db.collection('items').document(item_id).set(result)
+                
+                print(result)
+                
+                return jsonify({
+                    'result': result
+                }), 200
+                
+            except json.JSONDecodeError as e:
+                print(f"Error parsing sustainability analysis: {e}")
+                # Fallback to a default response if sustainability analysis fails
+                item_id = f"TAG{random.randint(10000, 99999)}"
+                default_result = {
+                    "id": item_id,
+                    "composition": composition,
+                    "score": 50,
+                    "status": "Recycle",
+                    "date": datetime.now().isoformat(),
+                    "batch_no": "C1"
+                }
+                
+                # Store the fallback analysis in the database
+                db.collection('items').document(item_id).set(default_result)
+                
+                return jsonify({
+                    'result': default_result,
+                    'message': 'Using default sustainability values'
+                }), 200
+                
+        except json.JSONDecodeError as e:
+            print(f"Error parsing Gemini response: {e}")
+            # Generate a completely dummy result if parsing fails
+            item_id = f"TAG{random.randint(10000, 99999)}"
+            dummy_result = {
+                "id": item_id,
+                "composition": {"Cotton": 100},
+                "score": 50,
+                "status": "Recycle",
+                "date": datetime.now().isoformat(),
+                "batch_no": "C1"
+            }
+            
+            db.collection('items').document(item_id).set(dummy_result)
+            
+            return jsonify({
+                'result': dummy_result,
+                'message': 'Using fallback values due to parsing error',
+                'error': str(e),
+                'rawResponse': response.text
+            }), 200
         
     except Exception as e:
+        print(f"Error in analyze_image: {e}")
         return jsonify({
             'error': f'Error processing image: {str(e)}'
-        }), 500
-        
-@ai_bp.route('/analyze_sustainability', methods=['POST'])
-def analyze_sustainability():
-    if not request.json:
-        return jsonify({
-            'error': 'No JSON provided'
-        }), 400
-    
-    materials_json = request.json
-    
-    try:
-        # TODO: Optimize prompt engineering
-        prompt = f"""
-            Based on this clothing item's material composition, analyze its sustainability and provide a recommendation.
-
-            Material composition: {materials_json}
-
-            Please provide:
-            1. Environmental impact assessment for each material (rated as low, medium, or high impact)
-            2. Overall sustainability score (1-100, where 100 is most sustainable)
-            3. A clear recommendation for one of these options: 
-            - RECYCLE: For items that cannot be reused but materials can be salvaged
-            - RESELL: For items in good condition that have market value
-            - DONATE: For usable items that could benefit others but may have limited resale value
-            
-            Format your response as JSON with these fields:
-            - materialImpacts: Object with each material and its environmental impact
-            - sustainabilityScore: Numeric score 1-100
-            - recommendation: One of "RECYCLE", "RESELL", or "DONATE"
-            - reasoning: Brief explanation for the recommendation
-        """
-        
-        response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=[prompt]
-        )
-        
-        print(response.text)
-        
-        return jsonify({
-            'result': response.text
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'error': f'Error processing json: {str(e)}'
         }), 500
         
 def generate_example_items(num_items=5):
