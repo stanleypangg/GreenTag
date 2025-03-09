@@ -5,6 +5,7 @@ import { FaArrowRight } from 'react-icons/fa';
 import MetricTracker from '../esg/components/MetricTracker';
 import PiChart from "./components/PiChart";
 import BarChart from './components/BarChart';
+import ReturnsPieChart from './components/ReturnPieChart';
 import Link from 'next/link';
 
 const DashboardPage: React.FC = () => {
@@ -16,9 +17,9 @@ const DashboardPage: React.FC = () => {
                     {/* Welcome Section */}
                     <div className="bg-white rounded-lg shadow-md p-6 flex-grow-0">
                         <h2 className="text-2xl font-semibold text-gray-800 mb-2">Welcome, John Doe!</h2>
-                        <p className="text-gray-600">You have 8 new batches to route.</p>
+                        <p className="text-gray-600">You have 0 new batches to route.</p>
                         <button className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                            <Link href='/app/returns'>Take me there</Link> <FaArrowRight className="inline ml-1" />
+                            <Link href='/app/routing'>Take me there</Link> <FaArrowRight className="inline ml-1" />
                         </button>
                     </div>
 
@@ -28,19 +29,19 @@ const DashboardPage: React.FC = () => {
                         <p className="text-green-600 text-sm">+30% this month</p>
                         <ul className="mt-4 space-y-3">
                             <li className="border-l-4 border-green-500 pl-3 py-1">
-                                <span className="text-sm text-gray-700 font-medium">$2,400, Design changes</span><br />
+                                <span className="text-sm text-gray-700 font-medium">Shipment S3 Delivered</span><br />
                                 <span className="text-xs text-gray-400">22 DEC 7:20 PM</span>
                             </li>
                             <li className="border-l-4 border-blue-500 pl-3 py-1">
-                                <span className="text-sm text-gray-700 font-medium">New order #4219423</span><br />
+                                <span className="text-sm text-gray-700 font-medium">Shipment D3 Delivered</span><br />
                                 <span className="text-xs text-gray-400">21 DEC 11:21 PM</span>
                             </li>
                             <li className="border-l-4 border-purple-500 pl-3 py-1">
-                                <span className="text-sm text-gray-700 font-medium">Return processed #3994</span><br />
+                                <span className="text-sm text-gray-700 font-medium">Shipment C1 Delivered</span><br />
                                 <span className="text-xs text-gray-400">20 DEC 3:10 PM</span>
                             </li>
                             <li className="border-l-4 border-yellow-500 pl-3 py-1">
-                                <span className="text-sm text-gray-700 font-medium">Payment received #8673</span><br />
+                                <span className="text-sm text-gray-700 font-medium">Shipment S2 Delivered</span><br />
                                 <span className="text-xs text-gray-400">19 DEC 8:34 AM</span>
                             </li>
                         </ul>
@@ -48,10 +49,9 @@ const DashboardPage: React.FC = () => {
 
                     {/* Need Help Section - Fixed size */}
                     <div className="bg-green-100 rounded-lg p-6 flex-grow-0">
-                        <p className="text-sm text-gray-700 font-semibold">Need help?</p>
-                        <p className="text-sm text-gray-600 mt-2 mb-4">Check our documentation for tips and guidance</p>
+                        <p className="text-sm text-gray-700 font-semibold pb-4">Need help?</p>
                         <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full">
-                            DOCUMENTATION
+                            FAQ
                         </button>
                     </div>
                 </div>
@@ -61,25 +61,9 @@ const DashboardPage: React.FC = () => {
                     {/* Returns Overview - Takes more space */}
                     <div className="bg-white rounded-lg shadow-md p-6 flex-grow">
                         <h3 className="text-lg font-medium text-gray-700 mb-4">Returns Overview</h3>
-                        <div className="flex justify-between mb-6">
-                            <div className="text-center">
-                                <span className="block text-3xl font-bold text-gray-800">237</span>
-                                <span className="text-sm text-gray-500">Total Returns</span>
-                            </div>
-                            <div className="text-center">
-                                <span className="block text-3xl font-bold text-green-600">94%</span>
-                                <span className="text-sm text-gray-500">Processed</span>
-                            </div>
-                            <div className="text-center">
-                                <span className="block text-3xl font-bold text-blue-600">87%</span>
-                                <span className="text-sm text-gray-500">Routed</span>
-                            </div>
-                        </div>
                         
-                        {/* Returns Chart Placeholder */}
-                        <div className="bg-gray-100 h-52 rounded flex items-center justify-center">
-                            <p className="text-gray-500">Returns Activity Chart</p>
-                        </div>
+                        {/* Returns Pie Chart - Real-time data */}
+                        <ReturnsPieChart />
                     </div>
 
                     {/* Industry Overview - Takes less space */}

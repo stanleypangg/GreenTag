@@ -99,7 +99,7 @@ const PiChart = () => {
 
     return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-md w-full h-full p-4 flex flex-col">
-            <h2 className="text-lg font-semibold mb-3">ESG Sustainability Score</h2>
+            <h2 className="text-lg font-semibold mb-3">Sustainability Score</h2>
             
             <div className="flex flex-row flex-1 overflow-hidden" ref={wrapperRef}>
                 <div className="flex-shrink-0 relative">

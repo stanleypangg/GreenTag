@@ -52,7 +52,7 @@ const MetricTracker = () => {
     <div className="bg-white rounded-lg shadow-md p-6 w-full">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">ESG Metric Tracker</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Sustainability Metric Tracker</h2>
           <p className="text-sm text-green-600 mt-1 flex items-center">
             <FaArrowUp className="inline mr-1" />
             ~1.3% Improvement this month

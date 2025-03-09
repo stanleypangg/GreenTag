@@ -12,7 +12,7 @@ const Header: React.FC = () => {
   const getPageName = () => {
     if (pathname.includes('/dashboard')) return 'Dashboard';
     if (pathname.includes('/returns')) return 'Returns';
-    if (pathname.includes('/esg')) return 'ESG';
+    if (pathname.includes('/esg')) return 'Sustainability';
     if (pathname.includes('/routing')) return 'Routing';
     return '';
   };
